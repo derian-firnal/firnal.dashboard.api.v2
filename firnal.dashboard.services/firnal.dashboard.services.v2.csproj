@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.52.0" />
+    <PackageReference Include="Twilio" Version="7.9.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\firnal.dashboard.data\firnal.dashboard.data.v2.csproj" />
+    <ProjectReference Include="..\firnal.dashboard.repositories\firnal.dashboard.repositories.v2.csproj" />
+  </ItemGroup>
+
+</Project>

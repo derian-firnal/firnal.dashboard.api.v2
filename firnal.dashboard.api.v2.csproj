@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>a205c650-671e-4e6b-bd27-e71185811a24</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>.</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="firnal.dashboard.data\**" />
+    <Compile Remove="firnal.dashboard.repositories\**" />
+    <Compile Remove="firnal.dashboard.services\**" />
+    <Content Remove="firnal.dashboard.data\**" />
+    <Content Remove="firnal.dashboard.repositories\**" />
+    <Content Remove="firnal.dashboard.services\**" />
+    <EmbeddedResource Remove="firnal.dashboard.data\**" />
+    <EmbeddedResource Remove="firnal.dashboard.repositories\**" />
+    <EmbeddedResource Remove="firnal.dashboard.services\**" />
+    <None Remove="firnal.dashboard.data\**" />
+    <None Remove="firnal.dashboard.repositories\**" />
+    <None Remove="firnal.dashboard.services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.20" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Snowflake.Data" Version="4.3.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="firnal.dashboard.data\firnal.dashboard.data.v2.csproj" />
+    <ProjectReference Include="firnal.dashboard.repositories\firnal.dashboard.repositories.v2.csproj" />
+    <ProjectReference Include="firnal.dashboard.services\firnal.dashboard.services.v2.csproj" />
+  </ItemGroup>
+
+</Project>
