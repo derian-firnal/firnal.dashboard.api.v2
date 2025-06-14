@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Restore and build your .NET project
-COPY ["firnal.dashboard.api.csproj", "."]
+COPY ["firnal.dashboard.api.v2.csproj", "."]
 RUN dotnet restore "./firnal.dashboard.api.v2.csproj"
 COPY . .
 RUN dotnet build "./firnal.dashboard.api.v2.csproj" -c Release -o /app/build
