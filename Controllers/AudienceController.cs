@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
+﻿using firnal.dashboard.services.v2.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -10,43 +10,18 @@ namespace firnal.dashboard.api.v2.Controllers
     // [Authorize]
     public class AudienceController : ControllerBase
     {
-        //private readonly IAudienceService _audienceService;
+        private readonly IAudienceService _audienceService;
 
-        //public AudienceController(IAudienceService audienceService) 
-        //{ 
-        //    _audienceService = audienceService;
-        //}
-
-        // GET: api/<AudienceController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        public AudienceController(IAudienceService audienceService)
         {
-            return new string[] { "value1", "value2" };
+            _audienceService = audienceService;
         }
 
-        // GET api/<AudienceController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpPost("uploadAudience")]
+        public async Task<IActionResult> UploadFiles([FromForm] List<IFormFile> files)
         {
-            return "value";
-        }
-
-        // POST api/<AudienceController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/<AudienceController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<AudienceController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            bool success = await _audienceService.UploadAudienceFiles(files);
+            return Ok(new { success });
         }
     }
 }

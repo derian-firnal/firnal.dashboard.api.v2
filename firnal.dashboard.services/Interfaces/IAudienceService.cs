@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace firnal.dashboard.repositories.v2.Interfaces
+namespace firnal.dashboard.services.v2.Interfaces
 {
-    public interface IAudienceRepository
+    public interface IAudienceService
     {
         Task<bool> UploadAudienceFiles(List<IFormFile> files);
     }
