@@ -30,5 +30,19 @@ namespace firnal.dashboard.api.v2.Controllers
             var details = await _audienceService.GetAudienceUploadDetails();
             return Ok(details);
         }
+
+        [HttpGet("getUploadedFileCount")]
+        public async Task<IActionResult> GetUploadedFileCount()
+        {
+            var result = await _audienceService.GetTotalAudienceUploadFileCount();
+            return Ok(result);
+        }
+
+        [HttpGet("getUniqueRecordsCount")]
+        public async Task<IActionResult> GetUniqueRecordsCount()
+        {
+            var result = await _audienceService.GetUniqueRecordsCount();
+            return Ok(result);
+        }
     }
 }

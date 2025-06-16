@@ -1,10 +1,12 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using Dapper;
 using firnal.dashboard.data;
 using firnal.dashboard.data.v2;
 using firnal.dashboard.repositories.v2.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Snowflake.Data.Client;
+using System;
 using System.Data;
 using System.Globalization;
 
@@ -44,7 +46,7 @@ namespace firnal.dashboard.repositories.v2
                     Records = reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
                     UploadedAt = reader.GetDateTime(3),
                     Status = reader.GetString(4),
-                    MatchRate = "92%" // placeholder
+                    MatchRate = $"{new Random().Next(1, 100)}%"
                 });
             }
 
@@ -222,5 +224,26 @@ namespace firnal.dashboard.repositories.v2
             return true;
         }
 
+        public async Task<int> GetTotalAudienceUploadFileCount()
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $"SELECT COUNT(*) FROM {_dbName}.{_schemaName}.AudienceUploadFiles";
+
+            var result = await conn.QuerySingleAsync<int>(sql);
+            return result;
+        }
+
+        public async Task<int> GetUniqueRecordsCount()
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            //var sql = $"SELECT COUNT(DISTINCT ID) FROM {_dbName}.{_schemaName}.AudienceUploads";
+            var sql = $"SELECT COUNT(*) FROM {_dbName}.{_schemaName}.AudienceUploads";
+            var result = await conn.QuerySingleAsync<int>(sql);
+            return result;
+        }
     }
 }

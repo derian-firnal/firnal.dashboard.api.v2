@@ -5,6 +5,8 @@ namespace firnal.dashboard.services.v2.Interfaces
 {
     public interface IAudienceService
     {
+        Task<int> GetTotalAudienceUploadFileCount();
+        Task<int> GetUniqueRecordsCount();
         Task<bool> UploadAudienceFiles(List<IFormFile> files);
         Task<List<AudienceUploadDetails>> GetAudienceUploadDetails();
     }
