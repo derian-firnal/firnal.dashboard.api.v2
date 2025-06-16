@@ -23,5 +23,12 @@ namespace firnal.dashboard.api.v2.Controllers
             bool success = await _audienceService.UploadAudienceFiles(files);
             return Ok(new { success });
         }
+
+        [HttpGet("getAudienceUploadDetails")]
+        public async Task<IActionResult> GetAudienceUploadDetails()
+        {
+            var details = await _audienceService.GetAudienceUploadDetails();
+            return Ok(details);
+        }
     }
 }

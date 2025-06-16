@@ -2,8 +2,12 @@ using firnal.dashboard.api;
 using firnal.dashboard.data;
 using firnal.dashboard.repositories;
 using firnal.dashboard.repositories.Interfaces;
+using firnal.dashboard.repositories.v2;
+using firnal.dashboard.repositories.v2.Interfaces;
 using firnal.dashboard.services;
 using firnal.dashboard.services.Interfaces;
+using firnal.dashboard.services.v2;
+using firnal.dashboard.services.v2.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +30,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IConsumerGraphService, ConsumerGraphService>();
 builder.Services.AddScoped<ITwilioService, TwilioService>();
+builder.Services.AddScoped<IAudienceRepository, AudienceRepository>();
+builder.Services.AddScoped<IAudienceService, AudienceService>();
 
 builder.Services.AddControllers();
 
