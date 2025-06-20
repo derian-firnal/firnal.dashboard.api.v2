@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace firnal.dashboard.data.v2
+﻿namespace firnal.dashboard.data
 {
     public class AudienceUploadDetails
     {

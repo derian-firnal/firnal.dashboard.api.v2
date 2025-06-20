@@ -1,4 +1,5 @@
-﻿using firnal.dashboard.data.v2;
+﻿using firnal.dashboard.data;
+using firnal.dashboard.data.v2;
 using firnal.dashboard.repositories.v2.Interfaces;
 using firnal.dashboard.services.v2.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +13,21 @@ namespace firnal.dashboard.services.v2
         public AudienceService(IAudienceRepository audienceRepository)
         {
             _audienceRepository = audienceRepository;
+        }
+
+        public async Task<List<AgeGroupStat>> GetAgeDistribution(int uploadFileId)
+        {
+            return await _audienceRepository.GetAgeDistribution(uploadFileId);
+        }
+
+        public async Task<List<AudienceConcentrationStat>> GetAudienceConcentration(int uploadFileId)
+        {
+            return await _audienceRepository.GetAudienceConcentration(uploadFileId);
+        }
+
+        public async Task<List<IncomeGroupStat>> GetIncomeDistribution(int uploadId)
+        {
+            return await _audienceRepository.GetIncomeDistribution(uploadId);
         }
 
         public async Task<List<Audience>> GetAudiences()
@@ -29,6 +45,11 @@ namespace firnal.dashboard.services.v2
             return await _audienceRepository.GetAverageIncomeForUpload(uploadId);
         }
 
+        public async Task<List<GenderBreakdown>> GetGenderVariance(int uploadId)
+        {
+            return await _audienceRepository.GetGenderVariance(uploadId);
+        }
+
         public async Task<int> GetTotalAudienceUploadFileCount()
         {
             return await _audienceRepository.GetTotalAudienceUploadFileCount();
@@ -42,6 +63,11 @@ namespace firnal.dashboard.services.v2
         public async Task<bool> UploadAudienceFiles(List<IFormFile> files)
         {
             return await _audienceRepository.UploadAudienceFiles(files);
+        }
+
+        public async Task<List<AppendedSampleRow>> GetAppendedSampleData(int uploadId)
+        {
+            return await _audienceRepository.GetAppendedSampleData(uploadId);
         }
     }
 }

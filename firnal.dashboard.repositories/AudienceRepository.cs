@@ -262,7 +262,7 @@ namespace firnal.dashboard.repositories.v2
             using var conn = _dbFactory.GetConnection();
             conn.Open();
 
-            var sql = @"
+            var sql = $@"
                 SELECT
                     ROUND(AVG(
                         CASE
@@ -278,11 +278,135 @@ namespace firnal.dashboard.repositories.v2
                             ELSE NULL
                         END
                     ), 0) AS AVERAGE_INCOME
-                FROM DASHBOARD_V2.PUBLIC.AUDIENCEUPLOADS
+                FROM {_dbName}.{_schemaName}.AUDIENCEUPLOADS
                 WHERE INCOME_RANGE IS NOT NULL AND UPLOADFILE_ID = :uploadId;";
 
             var result = await conn.ExecuteScalarAsync<decimal>(sql, new { uploadId = uploadId });
             return result;
+        }
+
+        public async Task<List<GenderBreakdown>> GetGenderVariance(int uploadFileId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $@"
+                SELECT 
+                    GENDER,
+                    COUNT(*) AS Count,
+                    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS Percent
+                FROM {_dbName}.{_schemaName}.AUDIENCEUPLOADS
+                WHERE GENDER IS NOT NULL
+                  AND UPLOADFILE_ID = :uploadId
+                GROUP BY GENDER;";
+
+            var result = await conn.QueryAsync<GenderBreakdown>(sql, new { uploadId = uploadFileId });
+
+            return result.ToList();
+        }
+
+        public async Task<List<AgeGroupStat>> GetAgeDistribution(int uploadFileId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $@"
+                SELECT 
+                    AGE_RANGE AS AgeRange,
+                    COUNT(*) AS Count
+                FROM {_dbName}.{_schemaName}.AUDIENCEUPLOADS
+                WHERE AGE_RANGE IS NOT NULL
+                  AND UPLOADFILE_ID = :uploadId
+                GROUP BY AGE_RANGE
+                ORDER BY 
+                  CASE 
+                    WHEN AGE_RANGE = '25-34' THEN 1
+                    WHEN AGE_RANGE = '35-44' THEN 2
+                    WHEN AGE_RANGE = '45-54' THEN 3
+                    WHEN AGE_RANGE = '55-64' THEN 4
+                    WHEN AGE_RANGE = '65 and older' THEN 5
+                    ELSE 99
+                  END;";
+
+            var result = await conn.QueryAsync<AgeGroupStat>(sql, new { uploadId = uploadFileId });
+
+            return result.ToList();
+        }
+
+        public async Task<List<AudienceConcentrationStat>> GetAudienceConcentration(int uploadFileId)
+        {
+
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $@"
+                SELECT 
+                    PERSONAL_STATE AS Location,
+                    COUNT(*) AS Count
+                FROM {_dbName}.{_schemaName}.AUDIENCEUPLOADS
+                WHERE PERSONAL_STATE IS NOT NULL
+                  AND UPLOADFILE_ID = :uploadId
+                GROUP BY PERSONAL_STATE
+                ORDER BY Count DESC
+                LIMIT 10;
+            ";
+
+            var result = await conn.QueryAsync<AudienceConcentrationStat>(sql, new { uploadId = uploadFileId });
+            return result.ToList();
+        }
+
+        public async Task<List<IncomeGroupStat>> GetIncomeDistribution(int uploadFileId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $@"
+                SELECT 
+                    INCOME_RANGE AS IncomeRange,
+                    COUNT(*) AS Count
+                FROM {_dbName}.{_schemaName}.AUDIENCEUPLOADS
+                WHERE INCOME_RANGE IS NOT NULL
+                  AND UPLOADFILE_ID = :uploadId
+                GROUP BY INCOME_RANGE
+                ORDER BY 
+                  CASE
+                    WHEN INCOME_RANGE = 'Less than $20,000' THEN 1
+                    WHEN INCOME_RANGE = '$20,000 to $44,999' THEN 2
+                    WHEN INCOME_RANGE = '$45,000 to $59,999' THEN 3
+                    WHEN INCOME_RANGE = '$60,000 to $74,999' THEN 4
+                    WHEN INCOME_RANGE = '$75,000 to $99,999' THEN 5
+                    WHEN INCOME_RANGE = '$100,000 to $149,999' THEN 6
+                    WHEN INCOME_RANGE = '$150,000 to $199,999' THEN 7
+                    WHEN INCOME_RANGE = '$200,000 to $249,000' THEN 8
+                    WHEN INCOME_RANGE ILIKE '$250,000%' THEN 9
+                    ELSE 99
+                  END;
+            ";
+
+            var result = await conn.QueryAsync<IncomeGroupStat>(sql, new { uploadId = uploadFileId });
+            return result.ToList();
+        }
+        public async Task<List<AppendedSampleRow>> GetAppendedSampleData(int uploadFileId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $@"
+                SELECT 
+                    FIRST_NAME AS FirstName,
+                    LAST_NAME AS LastName,
+                    PERSONAL_EMAILS AS Email,
+                    GENDER,
+                    AGE_RANGE AS AgeRange,
+                    INCOME_RANGE AS IncomeRange,
+                    PERSONAL_STATE AS State
+                FROM {_dbName}.{_schemaName}.AUDIENCEUPLOADS
+                WHERE UPLOADFILE_ID = :uploadId
+                LIMIT 10;
+            ";
+
+            var result = await conn.QueryAsync<AppendedSampleRow>(sql, new { uploadId = uploadFileId });
+            return result.ToList();
         }
     }
 }

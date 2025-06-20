@@ -1,4 +1,4 @@
-﻿namespace firnal.dashboard.data.v2
+﻿namespace firnal.dashboard.data
 {
     public class AudienceUploadRecord
     {

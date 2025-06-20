@@ -58,5 +58,41 @@ namespace firnal.dashboard.api.v2.Controllers
             var result = await _audienceService.GetAverageIncomeForUpload(uploadId);
             return Ok(result);
         }
+
+        [HttpGet("getGenderVariance/{uploadId}")]
+        public async Task<IActionResult> GetGenderVariance(int uploadId)
+        {
+            var result = await _audienceService.GetGenderVariance(uploadId);
+            return Ok(result);
+        }
+
+        [HttpGet("getAgeDistribution/{uploadId}")]
+        public async Task<IActionResult> GetAgeDistribution(int uploadId)
+        {
+            var result = await _audienceService.GetAgeDistribution(uploadId);
+            return Ok(result);
+        }
+
+        [HttpGet("getAudienceConcentration/{uploadId}")]
+        public async Task<IActionResult> GetAudienceConcentration(int uploadId)
+        {
+            var result = await _audienceService.GetAudienceConcentration(uploadId);
+            return Ok(result);
+        }
+
+        [HttpGet("getIncomeDistribution/{uploadId}")]
+        public async Task<IActionResult> GetIncomeDistribution(int uploadId)
+        {
+            var result = await _audienceService.GetIncomeDistribution(uploadId);
+            return Ok(result);
+        }
+
+        [HttpGet("getSampleData/{uploadId}")]
+        public async Task<IActionResult> GetSampleData(int uploadId)
+        {
+            var result = await _audienceService.GetAppendedSampleData(uploadId);
+            return Ok(result);
+        }
+
     }
 }
