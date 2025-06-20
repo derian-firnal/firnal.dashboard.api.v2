@@ -245,5 +245,44 @@ namespace firnal.dashboard.repositories.v2
             var result = await conn.QuerySingleAsync<int>(sql);
             return result;
         }
+
+        public async Task<List<Audience>> GetAudiences()
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $"SELECT * FROM {_dbName}.{_schemaName}.AudienceUploadFiles";
+
+            var result = await conn.QueryAsync<Audience>(sql);
+            return result.ToList();
+        }
+
+        public async Task<decimal> GetAverageIncomeForUpload(int uploadId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = @"
+                SELECT
+                    ROUND(AVG(
+                        CASE
+                            WHEN INCOME_RANGE ILIKE 'Less than $20,000' THEN 15000
+                            WHEN INCOME_RANGE ILIKE '$20,000 to $44,999' THEN 32500
+                            WHEN INCOME_RANGE ILIKE '$45,000 to $59,999' THEN 52500
+                            WHEN INCOME_RANGE ILIKE '$60,000 to $74,999' THEN 67500
+                            WHEN INCOME_RANGE ILIKE '$75,000 to $99,999' THEN 87500
+                            WHEN INCOME_RANGE ILIKE '$100,000 to $149,999' THEN 125000
+                            WHEN INCOME_RANGE ILIKE '$150,000 to $199,999' THEN 175000
+                            WHEN INCOME_RANGE ILIKE '$200,000 to $249,000' THEN 225000
+                            WHEN INCOME_RANGE ILIKE '$250,000%' THEN 275000
+                            ELSE NULL
+                        END
+                    ), 0) AS AVERAGE_INCOME
+                FROM DASHBOARD_V2.PUBLIC.AUDIENCEUPLOADS
+                WHERE INCOME_RANGE IS NOT NULL AND UPLOADFILE_ID = :uploadId;";
+
+            var result = await conn.ExecuteScalarAsync<decimal>(sql, new { uploadId = uploadId });
+            return result;
+        }
     }
 }

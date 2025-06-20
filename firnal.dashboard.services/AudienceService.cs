@@ -14,9 +14,19 @@ namespace firnal.dashboard.services.v2
             _audienceRepository = audienceRepository;
         }
 
+        public async Task<List<Audience>> GetAudiences()
+        {
+            return await _audienceRepository.GetAudiences();
+        }
+
         public async Task<List<AudienceUploadDetails>> GetAudienceUploadDetails()
         {
             return await _audienceRepository.GetAudienceUploadDetails();
+        }
+
+        public async Task<decimal> GetAverageIncomeForUpload(int uploadId)
+        {
+            return await _audienceRepository.GetAverageIncomeForUpload(uploadId);
         }
 
         public async Task<int> GetTotalAudienceUploadFileCount()

@@ -9,5 +9,7 @@ namespace firnal.dashboard.repositories.v2.Interfaces
         Task<int> GetUniqueRecordsCount();
         Task<bool> UploadAudienceFiles(List<IFormFile> files);
         Task<List<AudienceUploadDetails>> GetAudienceUploadDetails();
+        Task<List<Audience>> GetAudiences();
+        Task<decimal> GetAverageIncomeForUpload(int id);
     }
 }

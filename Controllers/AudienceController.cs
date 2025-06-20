@@ -44,5 +44,19 @@ namespace firnal.dashboard.api.v2.Controllers
             var result = await _audienceService.GetUniqueRecordsCount();
             return Ok(result);
         }
+
+        [HttpGet("getAudiences")]
+        public async Task<IActionResult> GetAudiences()
+        {
+            var result = await _audienceService.GetAudiences();
+            return Ok(result);
+        }
+
+        [HttpGet("getAverageIncomeForUpload/{uploadId}")]
+        public async Task<IActionResult> GetAverageIncomeForUpload(int uploadId)
+        {
+            var result = await _audienceService.GetAverageIncomeForUpload(uploadId);
+            return Ok(result);
+        }
     }
 }
