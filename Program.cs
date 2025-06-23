@@ -8,6 +8,7 @@ using firnal.dashboard.services;
 using firnal.dashboard.services.Interfaces;
 using firnal.dashboard.services.v2;
 using firnal.dashboard.services.v2.Interfaces;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,16 @@ builder.AddJWT();
 
 // Swagger with JWT configuration
 builder.AddSwaggerGen();
+
+builder.Services.AddHttpClient();
+ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
+
+builder.Services.AddHttpClient("Tag4Client")
+    .ConfigurePrimaryHttpMessageHandler(() =>
+        new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+        });
 
 builder.Services.AddCors(options =>
 {
