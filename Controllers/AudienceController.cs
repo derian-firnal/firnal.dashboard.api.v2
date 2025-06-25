@@ -27,8 +27,11 @@ namespace firnal.dashboard.api.v2.Controllers
         {
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
 
-            var schemas = (await _schemaService.GetSchemaForUserId(userEmail)).First();
+            var schemas = (await _schemaService.GetSchemaForUserId(userEmail)).FirstOrDefault();
             if (string.IsNullOrEmpty(schemas)) schemas = "ADMIN";
+
+            if (files == null || files.Count == 0)
+                return BadRequest("No files uploaded.");
 
             bool success = await _audienceService.UploadAudienceFiles(files, schemas);
             return Ok(new { success });
