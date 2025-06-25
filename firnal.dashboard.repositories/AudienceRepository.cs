@@ -604,12 +604,12 @@ namespace firnal.dashboard.repositories.v2
             var enrichSql = $@"
                 INSERT INTO {_dbName}.{_schemaName}.AudienceUploads_Enriched
                 SELECT *, 
-                    ROUND(3 * RANDOM(), 2) AS CouponScores,
-                    ROUND(3 * RANDOM(), 2) AS EmailScores,
-                    ROUND(3 * RANDOM(), 2) AS FinancialScores,
-                    ROUND(3 * RANDOM(), 2) AS ImpulseScores,
-                    ROUND(3 * RANDOM(), 2) AS SmsScores,
-                    ROUND(3 * RANDOM(), 2) AS SubscriptionScores
+                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS CouponScores,
+                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS EmailScores,
+                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS FinancialScores,
+                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS ImpulseScores,
+                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS SmsScores,
+                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS SubscriptionScores
                 FROM {_dbName}.{_schemaName}.{tempTableName};";
 
             using (var cmd = conn.CreateCommand()) { cmd.CommandText = enrichSql; cmd.ExecuteNonQuery(); }
