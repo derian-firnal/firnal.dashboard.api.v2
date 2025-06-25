@@ -53,7 +53,7 @@ namespace firnal.dashboard.repositories.v2
             return results;
         }
 
-        public async Task<bool> UploadAudienceFiles(List<IFormFile> files)
+        public async Task<bool> UploadAudienceFiles(List<IFormFile> files, string userSchema)
         {
             foreach (var file in files)
             {
@@ -71,9 +71,9 @@ namespace firnal.dashboard.repositories.v2
 
                     using var insertMeta = metaConn.CreateCommand();
                     insertMeta.CommandText = $@"
-                INSERT INTO {_dbName}.{_schemaName}.AudienceUploadFiles 
-                (FileName, RowCount, Status, ErrorMessage)
-                VALUES (:fileName, 0, 'InProgress', '')";
+                        INSERT INTO {_dbName}.{_schemaName}.AudienceUploadFiles 
+                        (FileName, RowCount, Status, ErrorMessage, Uploaded_Schema)
+                        VALUES (:fileName, 0, 'InProgress', '', :userSchema)";
 
                     insertMeta.Parameters.Add(new SnowflakeDbParameter
                     {
@@ -82,14 +82,21 @@ namespace firnal.dashboard.repositories.v2
                         Value = fileName
                     });
 
+                    insertMeta.Parameters.Add(new SnowflakeDbParameter
+                    {
+                        ParameterName = "userSchema",
+                        DbType = DbType.String,
+                        Value = userSchema
+                    });
+
                     insertMeta.ExecuteNonQuery();
 
                     using var getIdCmd = metaConn.CreateCommand();
                     getIdCmd.CommandText = $@"
-                SELECT ID FROM {_dbName}.{_schemaName}.AudienceUploadFiles 
-                WHERE FileName = :fileName 
-                ORDER BY UploadedAt DESC 
-                LIMIT 1";
+                        SELECT ID FROM {_dbName}.{_schemaName}.AudienceUploadFiles 
+                        WHERE FileName = :fileName 
+                        ORDER BY UploadedAt DESC 
+                        LIMIT 1";
 
                     getIdCmd.Parameters.Add(new SnowflakeDbParameter
                     {
@@ -386,6 +393,7 @@ namespace firnal.dashboard.repositories.v2
             var result = await conn.QueryAsync<IncomeGroupStat>(sql, new { uploadId = uploadFileId });
             return result.ToList();
         }
+
         public async Task<List<AppendedSampleRow>> GetAppendedSampleData(int uploadFileId)
         {
             using var conn = _dbFactory.GetConnection();

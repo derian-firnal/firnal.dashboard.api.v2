@@ -1,5 +1,8 @@
-﻿using firnal.dashboard.services.v2.Interfaces;
+﻿using firnal.dashboard.services.Interfaces;
+using firnal.dashboard.services.v2.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -7,20 +10,27 @@ namespace firnal.dashboard.api.v2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize]
+    [Authorize]
     public class AudienceController : ControllerBase
     {
         private readonly IAudienceService _audienceService;
+        private readonly ISchemaService _schemaService;
 
-        public AudienceController(IAudienceService audienceService)
+        public AudienceController(IAudienceService audienceService, ISchemaService schemaService)
         {
             _audienceService = audienceService;
+            _schemaService = schemaService;
         }
 
         [HttpPost("uploadAudience")]
         public async Task<IActionResult> UploadFiles([FromForm] List<IFormFile> files)
         {
-            bool success = await _audienceService.UploadAudienceFiles(files);
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            var schemas = (await _schemaService.GetSchemaForUserId(userEmail)).First();
+            if (string.IsNullOrEmpty(schemas)) schemas = "ADMIN";
+
+            bool success = await _audienceService.UploadAudienceFiles(files, schemas);
             return Ok(new { success });
         }
 

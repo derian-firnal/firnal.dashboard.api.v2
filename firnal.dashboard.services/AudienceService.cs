@@ -60,9 +60,9 @@ namespace firnal.dashboard.services.v2
             return await _audienceRepository.GetUniqueRecordsCount();
         }
 
-        public async Task<bool> UploadAudienceFiles(List<IFormFile> files)
+        public async Task<bool> UploadAudienceFiles(List<IFormFile> files, string userSchema)
         {
-            return await _audienceRepository.UploadAudienceFiles(files);
+            return await _audienceRepository.UploadAudienceFiles(files, userSchema);
         }
 
         public async Task<List<AppendedSampleRow>> GetAppendedSampleData(int uploadId)

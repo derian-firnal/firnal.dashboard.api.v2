@@ -8,7 +8,7 @@ namespace firnal.dashboard.services.v2.Interfaces
     {
         Task<int> GetTotalAudienceUploadFileCount();
         Task<int> GetUniqueRecordsCount();
-        Task<bool> UploadAudienceFiles(List<IFormFile> files);
+        Task<bool> UploadAudienceFiles(List<IFormFile> files, string userSchema);
         Task<List<AudienceUploadDetails>> GetAudienceUploadDetails();
         Task<List<Audience>> GetAudiences();
         Task<decimal> GetAverageIncomeForUpload(int uploadId);
