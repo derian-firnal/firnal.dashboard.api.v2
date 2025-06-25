@@ -9,7 +9,10 @@ namespace firnal.dashboard.services.v2.Interfaces
         Task<int> GetTotalAudienceUploadFileCount();
         Task<int> GetUniqueRecordsCount();
         Task<bool> UploadAudienceFiles(List<IFormFile> files, string userSchema);
+        Task<List<AudienceUploadRecord>> GetAudiencesByUploadId(string uploadFileId);
+        Task<List<AudienceUploadRecordEnriched>> GetEnrichedAudiencesByUploadId(string uploadFileId);
         Task<List<AudienceUploadDetails>> GetAudienceUploadDetails();
+        Task<AudienceUploadDetails> GetAudienceUploadDetailsById(string uploadFileId);
         Task<List<Audience>> GetAudiences();
         Task<decimal> GetAverageIncomeForUpload(int uploadId);
         Task<List<GenderBreakdown>> GetGenderVariance(int uploadId);

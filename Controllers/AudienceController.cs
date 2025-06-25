@@ -1,8 +1,11 @@
-﻿using firnal.dashboard.services.Interfaces;
+﻿using firnal.dashboard.data;
+using firnal.dashboard.services;
+using firnal.dashboard.services.Interfaces;
 using firnal.dashboard.services.v2.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -114,5 +117,39 @@ namespace firnal.dashboard.api.v2.Controllers
             return Ok(new { success = true, enrichedRosCount });
         }
 
+        [HttpGet("DownloadAudience/{uploadId}")]
+        public async Task<IActionResult> DownloadAudience(string uploadId)
+        {
+            var audienceUploadDetails = await _audienceService.GetAudienceUploadDetailsById(uploadId);
+            var isEnriched = audienceUploadDetails.IsEnriched;
+
+            // Get the appropriate data and model type
+            IEnumerable<object> data = isEnriched
+                ? await _audienceService.GetEnrichedAudiencesByUploadId(uploadId)
+                : await _audienceService.GetAudiencesByUploadId(uploadId);
+
+            Type recordType = isEnriched ? typeof(AudienceUploadRecordEnriched) : typeof(AudienceUploadRecord);
+            var properties = recordType.GetProperties();
+
+            // Build CSV
+            var csv = new StringBuilder();
+            csv.AppendLine(string.Join(",", properties.Select(p => $"\"{p.Name}\"")));
+
+            foreach (var item in data)
+            {
+                var values = properties.Select(p =>
+                {
+                    var value = p.GetValue(item)?.ToString() ?? "";
+                    return $"\"{value.Replace("\"", "\"\"")}\"";
+                });
+
+                csv.AppendLine(string.Join(",", values));
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+
+            Response.Headers["Content-Disposition"] = $"attachment; filename={audienceUploadDetails.AudienceName}";
+            return File(bytes, "text/csv", $"{audienceUploadDetails.AudienceName}");
+        }
     }
 }

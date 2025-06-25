@@ -22,33 +22,16 @@ namespace firnal.dashboard.repositories.v2
         {
             try
             {
-
-                var results = new List<AudienceUploadDetails>();
-
                 using var conn = _dbFactory.GetConnection();
                 conn.Open();
 
-                using var cmd = conn.CreateCommand();
-                cmd.CommandText = $@"
-                SELECT ID, FileName, RowCount, UploadedAt, Status, IsEnriched
-                FROM {_dbName}.{_schemaName}.AudienceUploadFiles
-                ORDER BY UploadedAt DESC";
+                var sql = $@"
+                    SELECT ID, FileName as AudienceName, RowCount as Records, UploadedAt, Status, IsEnriched
+                    FROM {_dbName}.{_schemaName}.AudienceUploadFiles
+                    ORDER BY UploadedAt DESC";
 
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    results.Add(new AudienceUploadDetails
-                    {
-                        Id = reader.GetInt64(reader.GetOrdinal("ID")),
-                        AudienceName = reader.GetString(reader.GetOrdinal("FILENAME")),
-                        Records = reader.IsDBNull(reader.GetOrdinal("ROWCOUNT")) ? 0 : reader.GetInt32(reader.GetOrdinal("ROWCOUNT")),
-                        UploadedAt = reader.GetDateTime(reader.GetOrdinal("UPLOADEDAT")),
-                        Status = reader.GetString(reader.GetOrdinal("STATUS")),
-                        IsEnriched = !reader.IsDBNull(reader.GetOrdinal("ISENRICHED")) && reader.GetBoolean(reader.GetOrdinal("ISENRICHED"))
-                    });
-                }
-
-                return results;
+                var results = await conn.QueryAsync<AudienceUploadDetails>(sql);
+                return results.ToList();
             }
             catch (Exception ex)
             {
@@ -56,7 +39,21 @@ namespace firnal.dashboard.repositories.v2
             }
         }
 
-        
+        public async Task<AudienceUploadDetails> GetAudienceUploadDetailsById(string uploadFileId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $@"
+                SELECT ID, FileName as AudienceName, RowCount as Records, UploadedAt, Status, IsEnriched
+                FROM {_dbName}.{_schemaName}.AudienceUploadFiles
+                WHERE ID = :uploadFileId";
+
+            var results = await conn.QuerySingleAsync<AudienceUploadDetails>(sql, new { uploadFileId });
+            return results;
+        }
+
+
         #region -- file upload methods --
 
         public async Task<long> InsertUploadMetadataAsync(string fileName, string userSchema)
@@ -629,6 +626,34 @@ namespace firnal.dashboard.repositories.v2
                 WHERE ID = :uploadId";
 
             await conn.ExecuteAsync(sql, new { uploadId = uploadId });
+        }
+
+        public async Task<List<AudienceUploadRecord>> GetAudiencesByUploadId(string uploadFileId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $@"
+                SELECT *
+                FROM {_dbName}.{_schemaName}.AudienceUploads
+                WHERE UPLOADFILE_ID = :uploadFileId";
+
+            var results = await conn.QueryAsync<AudienceUploadRecord>(sql, new { uploadFileId });
+            return results.ToList();
+        }
+
+        public async Task<List<AudienceUploadRecordEnriched>> GetEnrichedAudiencesByUploadId(string uploadFileId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $@"
+                SELECT *
+                FROM {_dbName}.{_schemaName}.AudienceUploads_Enriched
+                WHERE UPLOADFILE_ID = :uploadFileId";
+
+            var results = await conn.QueryAsync<AudienceUploadRecordEnriched>(sql, new { uploadFileId });
+            return results.ToList();
         }
     }
 }

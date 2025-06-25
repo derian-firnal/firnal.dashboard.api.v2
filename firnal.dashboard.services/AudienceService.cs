@@ -43,6 +43,11 @@ namespace firnal.dashboard.services.v2
             return await _audienceRepository.GetAudienceUploadDetails();
         }
 
+        public async Task<AudienceUploadDetails> GetAudienceUploadDetailsById(string uploadFileId)
+        {
+            return await _audienceRepository.GetAudienceUploadDetailsById(uploadFileId);
+        }
+
         public async Task<decimal> GetAverageIncomeForUpload(int uploadId)
         {
             return await _audienceRepository.GetAverageIncomeForUpload(uploadId);
@@ -122,6 +127,16 @@ namespace firnal.dashboard.services.v2
                 await _audienceRepository.MarkUploadAsEnriched(uploadId);
 
             return results;
+        }
+
+        public async Task<List<AudienceUploadRecord>> GetAudiencesByUploadId(string uploadFileId)
+        {
+            return await _audienceRepository.GetAudiencesByUploadId(uploadFileId);
+        }
+
+        public async Task<List<AudienceUploadRecordEnriched>> GetEnrichedAudiencesByUploadId(string uploadFileId)
+        {
+            return await _audienceRepository.GetEnrichedAudiencesByUploadId(uploadFileId);
         }
     }
 }

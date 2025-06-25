@@ -63,6 +63,7 @@
         public string? SUB_CATEGORY { get; set; }
         public string? TIMES_SEEN { get; set; }
         public string? TOPIC { get; set; }
+        public string? UPLOADFILE_ID { get; set; }
         public string? WORK_HISTORY { get; set; }
         public string? score { get; set; }
         public string? sha256_lc_hem { get; set; }
