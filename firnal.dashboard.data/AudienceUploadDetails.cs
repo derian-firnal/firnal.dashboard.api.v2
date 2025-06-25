@@ -6,7 +6,7 @@
         public string? AudienceName { get; set; }
         public int Records { get; set; }
         public DateTime UploadedAt { get; set; }
-        public string? MatchRate { get; set; }
+        public bool IsEnriched { get; set; }
         public string? Status { get; set; }
     }
 }

@@ -8,7 +8,16 @@ namespace firnal.dashboard.repositories.v2.Interfaces
     {
         Task<int> GetTotalAudienceUploadFileCount();
         Task<int> GetUniqueRecordsCount();
-        Task<bool> UploadAudienceFiles(List<IFormFile> files, string userSchema);
+
+
+        // -- upload methods
+        // Task<bool> UploadAudienceFiles(List<IFormFile> files, string userSchema);
+        Task<long> InsertUploadMetadataAsync(string fileName, string userSchema);
+        Task<(int rowCount, string errorMessage)> InsertAudienceRecordsAsync(List<AudienceUploadRecord> records, long uploadFileId);
+        Task FinalizeUploadAsync(long uploadFileId, int rowCount, string status, string errorMessage);
+        // -- end upload methods
+
+
         Task<List<AudienceUploadDetails>> GetAudienceUploadDetails();
         Task<List<Audience>> GetAudiences();
         Task<decimal> GetAverageIncomeForUpload(int uploadId);
