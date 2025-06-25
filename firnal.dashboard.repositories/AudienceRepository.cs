@@ -531,6 +531,7 @@ namespace firnal.dashboard.repositories.v2
                     PERSONAL_STATE AS State
                 FROM {_dbName}.{_schemaName}.AUDIENCEUPLOADS
                 WHERE UPLOADFILE_ID = :uploadId
+                ORDER BY RANDOM()
                 LIMIT 10;
             ";
 
