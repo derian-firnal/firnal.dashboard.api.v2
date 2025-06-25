@@ -351,7 +351,6 @@ namespace firnal.dashboard.repositories.v2
         #endregion
 
 
-
         public async Task<int> GetTotalAudienceUploadFileCount()
         {
             using var conn = _dbFactory.GetConnection();
@@ -537,6 +536,99 @@ namespace firnal.dashboard.repositories.v2
 
             var result = await conn.QueryAsync<AppendedSampleRow>(sql, new { uploadId = uploadFileId });
             return result.ToList();
+        }
+
+        public async Task<List<AudienceUploadRecord>> GetAudienceUploadRecordsByUploadId(int uploadFileId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            var sql = $@"
+                SELECT 
+                    * 
+                from {_dbName}.{_schemaName}.AUDIENCEUPLOADS
+                WHERE UPLOADFILE_ID = :uploadId";
+
+            var result = await conn.QueryAsync<AudienceUploadRecord>(sql, new { uploadId = uploadFileId });
+            return result.ToList();
+        }
+
+        public async Task<int> EnrichAudience(int uploadFileId, List<AudienceUploadRecord> records)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            // 1. Create temporary table
+            var tempTableName = "TEMP_AUDIENCE_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            var createTempSql = $@"CREATE TEMPORARY TABLE {_dbName}.{_schemaName}.{tempTableName} LIKE {_dbName}.{_schemaName}.AudienceUploads;";
+            using (var cmd = conn.CreateCommand()) { cmd.CommandText = createTempSql; cmd.ExecuteNonQuery(); }
+
+            // 2. Insert records into temp table
+            const int batchSize = 100;
+            var props = typeof(AudienceUploadRecord).GetProperties();
+            var columns = props.Select(p => p.Name).ToList();
+
+            for (int i = 0; i < records.Count; i += batchSize)
+            {
+                var batch = records.Skip(i).Take(batchSize).ToList();
+                using var transaction = conn.BeginTransaction();
+                using var cmd = conn.CreateCommand();
+                cmd.Transaction = transaction;
+
+                var allRows = new List<string>();
+                int rowIndex = 0;
+
+                foreach (var record in batch)
+                {
+                    var valuePlaceholders = new List<string>();
+                    foreach (var prop in props)
+                    {
+                        string paramName = $"{prop.Name}_{rowIndex}";
+                        object value = prop.GetValue(record) ?? DBNull.Value;
+                        cmd.Parameters.Add(new SnowflakeDbParameter { ParameterName = paramName, DbType = DbType.String, Value = value });
+                        valuePlaceholders.Add($":{paramName}");
+                    }
+
+                    allRows.Add($"({string.Join(",", valuePlaceholders)})");
+                    rowIndex++;
+                }
+
+                cmd.CommandText = $@"
+                    INSERT INTO {_dbName}.{_schemaName}.{tempTableName} ({string.Join(",", columns)})
+                    VALUES {string.Join(",", allRows)}";
+                cmd.ExecuteNonQuery();
+                transaction.Commit();
+            }
+
+            // 3. Run enrichment against temp table (this is a placeholder – replace with your logic)
+            var enrichSql = $@"
+                INSERT INTO {_dbName}.{_schemaName}.AudienceUploads_Enriched
+                SELECT *, 
+                    RANDOM() AS CouponScores,
+                    RANDOM() AS EmailScores,
+                    RANDOM() AS FinancialScores,
+                    RANDOM() AS ImpulseScores,
+                    RANDOM() AS SmsScores,
+                    RANDOM() AS SubscriptionScores
+                FROM {_dbName}.{_schemaName}.{tempTableName};";
+
+            using (var cmd = conn.CreateCommand()) { cmd.CommandText = enrichSql; cmd.ExecuteNonQuery(); }
+
+            return records.Count;
+        }
+
+        public async Task MarkUploadAsEnriched(int uploadId)
+        {
+            using var conn = _dbFactory.GetConnection();
+            conn.Open();
+
+            using var cmd = conn.CreateCommand();
+            var sql = $@"
+                UPDATE {_dbName}.{_schemaName}.AudienceUploadFiles
+                SET IsEnriched = TRUE
+                WHERE ID = :uploadId";
+
+            await conn.ExecuteAsync(sql, new { uploadId = uploadId });
         }
     }
 }

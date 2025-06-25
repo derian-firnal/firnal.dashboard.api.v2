@@ -110,5 +110,18 @@ namespace firnal.dashboard.services.v2
         {
             return await _audienceRepository.GetAppendedSampleData(uploadId);
         }
+
+        public async Task<int> EnrichAudience(int uploadId)
+        {
+            var records = await _audienceRepository.GetAudienceUploadRecordsByUploadId(uploadId);
+            if (!records.Any()) return 0;
+
+            var results = await _audienceRepository.EnrichAudience(uploadId, records);
+
+            if (results > 0)
+                await _audienceRepository.MarkUploadAsEnriched(uploadId);
+
+            return results;
+        }
     }
 }

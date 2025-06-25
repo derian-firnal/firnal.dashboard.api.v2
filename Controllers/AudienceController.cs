@@ -104,5 +104,12 @@ namespace firnal.dashboard.api.v2.Controllers
             return Ok(result);
         }
 
+        [HttpPost("EnrichAudience/{uploadId}")]
+        public async Task<IActionResult> EnrichSelected(int uploadId)
+        {
+            var enrichedRosCount = await _audienceService.EnrichAudience(uploadId);
+            return Ok(new { success = true, enrichedRosCount });
+        }
+
     }
 }

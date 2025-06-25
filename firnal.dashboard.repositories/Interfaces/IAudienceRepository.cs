@@ -26,5 +26,8 @@ namespace firnal.dashboard.repositories.v2.Interfaces
         Task<List<AudienceConcentrationStat>> GetAudienceConcentration(int uploadFileId);
         Task<List<IncomeGroupStat>> GetIncomeDistribution(int uploadFileId);
         Task<List<AppendedSampleRow>> GetAppendedSampleData(int uploadFileId);
+        Task<List<AudienceUploadRecord>> GetAudienceUploadRecordsByUploadId(int uploadFileId);
+        Task<int> EnrichAudience(int uploadFileId, List<AudienceUploadRecord> records);
+        Task MarkUploadAsEnriched(int uploadId);
     }
 }
