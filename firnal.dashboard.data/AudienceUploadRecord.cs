@@ -2,6 +2,8 @@
 {
     public class AudienceUploadRecord
     {
+        public string? ID { get; set; }
+        public string? UPLOADFILE_ID { get; set; }
         public string? ADDITIONAL_PERSONAL_EMAILS { get; set; }
         public string? AGE_RANGE { get; set; }
         public string? BITO_IDS { get; set; }
@@ -30,7 +32,6 @@
         public string? FIRST_NAME { get; set; }
         public string? GENDER { get; set; }
         public string? HOMEOWNER { get; set; }
-        public string? ID { get; set; }
         public string? INCOME_RANGE { get; set; }
         public string? JOB_TITLE { get; set; }
         public string? JOB_TITLE_LAST_UPDATED { get; set; }
@@ -63,10 +64,10 @@
         public string? SUB_CATEGORY { get; set; }
         public string? TIMES_SEEN { get; set; }
         public string? TOPIC { get; set; }
-        public string? UPLOADFILE_ID { get; set; }
         public string? WORK_HISTORY { get; set; }
         public string? score { get; set; }
         public string? sha256_lc_hem { get; set; }
     }
+
 
 }

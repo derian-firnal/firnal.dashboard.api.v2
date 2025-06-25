@@ -4,6 +4,7 @@ using firnal.dashboard.services.Interfaces;
 using firnal.dashboard.services.v2.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 
@@ -150,6 +151,22 @@ namespace firnal.dashboard.api.v2.Controllers
 
             Response.Headers["Content-Disposition"] = $"attachment; filename={audienceUploadDetails.AudienceName}";
             return File(bytes, "text/csv", $"{audienceUploadDetails.AudienceName}");
+        }
+
+        [HttpGet("GetSampleCsv")]
+        public IActionResult GetSampleCsv()
+        {
+            var type = typeof(AudienceUploadRecord);
+
+            var headers = type
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Select(p => p.Name);
+
+            var csvHeader = string.Join(",", headers);
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csvHeader + Environment.NewLine);
+
+            return File(bytes, "text/csv", "sample_audience.csv");
         }
     }
 }
