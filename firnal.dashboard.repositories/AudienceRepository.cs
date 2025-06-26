@@ -101,7 +101,7 @@ namespace firnal.dashboard.repositories.v2
                     cmd.Transaction = transaction;
 
                     var props = typeof(AudienceUploadRecord).GetProperties();
-                    var columns = props.Select(p => p.Name).Append("UPLOADFILE_ID").ToList();
+                    var columns = props.Select(p => p.Name).ToList(); //.Append("UPLOADFILE_ID").ToList();
 
                     var allRows = new List<string>();
                     int rowIndex = 0;
