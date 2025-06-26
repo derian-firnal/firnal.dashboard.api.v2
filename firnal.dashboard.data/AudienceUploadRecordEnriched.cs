@@ -2,13 +2,11 @@
 {
     public class AudienceUploadRecordEnriched : AudienceUploadRecord
     {
-        public double CouponScores {  get; set; }
-        public double EmailScores { get; set; }
-        public double FinancialScores { get; set; }
-        public double ImpulseScores { get; set; }
-        public double InfluencerScores { get; set; }
-        public double SmsScores { get; set; }
-        public double SubscriptionScores { get; set; }
+        public double? ENRICHMENT_COUPONSCORE { get; set; }
+        public double? ENRICHMENT_EMAILSCORE { get; set; }
+        public double? ENRICHMENT_FINANCIALSCORE { get; set; }
+        public double? ENRICHMENT_IMPULSESCORE { get; set; }
+        public double? ENRICHMENT_SMSSCORE { get; set; }
+        public double? ENRICHMENT_SUBSCRIPTIONSCORE { get; set; }
     }
-
 }

@@ -706,21 +706,100 @@ namespace firnal.dashboard.repositories.v2
                 transaction.Commit();
             }
 
-            // 3. Run enrichment against temp table (this is a placeholder – replace with your logic)
-            var enrichSql = $@"
-                INSERT INTO {_dbName}.{_schemaName}.AudienceUploads_Enriched
-                SELECT *, 
-                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS CouponScores,
-                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS EmailScores,
-                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS FinancialScores,
-                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS ImpulseScores,
-                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS SmsScores,
-                    ROUND(UNIFORM(0::FLOAT, 3::FLOAT, RANDOM()), 2) AS SubscriptionScores
-                FROM {_dbName}.{_schemaName}.{tempTableName};";
+            // 3. Get enrichment scores
+            var couponScores = await GetScoreColumn(conn, "GET_COUPON_CONVERSION_SCORE", $"{_dbName}.{_schemaName}.{tempTableName}");
+            var emailScores = await GetScoreColumn(conn, "GET_EMAIL_ENGAGEMENT_SCORE", $"{_dbName}.{_schemaName}.{tempTableName}");
+            var financialScores = await GetScoreColumn(conn, "GET_FINANCIAL_OVEREXTENTION_SCORE", $"{_dbName}.{_schemaName}.{tempTableName}");
+            var impulseScores = await GetScoreColumn(conn, "GET_IMPULSE_BUY_SCORE", $"{_dbName}.{_schemaName}.{tempTableName}");
+            var influencerScores = await GetScoreColumn(conn, "GET_INFLUENCER_RESPONSE_SCORE", $"{_dbName}.{_schemaName}.{tempTableName}");
+            var smsScores = await GetScoreColumn(conn, "GET_SMS_ENGAGEMENT_SCORE", $"{_dbName}.{_schemaName}.{tempTableName}");
+            var subscriptionScores = await GetScoreColumn(conn, "GET_SUBSCRIPTION_PURCHASE_SCORE", $"{_dbName}.{_schemaName}.{tempTableName}");
 
-            using (var cmd = conn.CreateCommand()) { cmd.CommandText = enrichSql; cmd.ExecuteNonQuery(); }
+            // 4. Merge records with enrichment scores
+            var enrichedList = records.Select((record, i) =>
+            {
+                var enriched = new AudienceUploadRecordEnriched();
+
+                foreach (var prop in typeof(AudienceUploadRecord).GetProperties())
+                {
+                    var value = prop.GetValue(record);
+                    typeof(AudienceUploadRecordEnriched).GetProperty(prop.Name)?.SetValue(enriched, value);
+                }
+
+                enriched.ENRICHMENT_COUPONSCORE = couponScores.ElementAtOrDefault(i);
+                enriched.ENRICHMENT_EMAILSCORE = emailScores.ElementAtOrDefault(i);
+                enriched.ENRICHMENT_FINANCIALSCORE = financialScores.ElementAtOrDefault(i);
+                enriched.ENRICHMENT_IMPULSESCORE = impulseScores.ElementAtOrDefault(i);
+                //enriched.InfluencerScores = influencerScores.ElementAtOrDefault(i);
+                enriched.ENRICHMENT_SMSSCORE = smsScores.ElementAtOrDefault(i);
+                enriched.ENRICHMENT_SUBSCRIPTIONSCORE = subscriptionScores.ElementAtOrDefault(i);
+                enriched.UPLOADFILE_ID = uploadFileId.ToString();
+
+                return enriched;
+            }).ToList();
+
+            // 5. Insert enriched records
+            var enrichedProps = typeof(AudienceUploadRecordEnriched).GetProperties().ToList();
+            var enrichedColumns = enrichedProps.Select(p => p.Name).ToList();
+
+            for (int i = 0; i < enrichedList.Count; i += batchSize)
+            {
+                var batch = enrichedList.Skip(i).Take(batchSize).ToList();
+                using var transaction = conn.BeginTransaction();
+                using var cmd = conn.CreateCommand();
+                cmd.Transaction = transaction;
+
+                var allRows = new List<string>();
+                int rowIndex = 0;
+
+                foreach (var record in batch)
+                {
+                    var valuePlaceholders = new List<string>();
+                    foreach (var prop in enrichedProps)
+                    {
+                        var paramName = $"{prop.Name}_{rowIndex}";
+                        var val = prop.GetValue(record) ?? DBNull.Value;
+                        cmd.Parameters.Add(new SnowflakeDbParameter
+                        {
+                            ParameterName = paramName,
+                            DbType = DbType.String, // adjust types as needed
+                            Value = val
+                        });
+                        valuePlaceholders.Add($":{paramName}");
+                    }
+                    allRows.Add($"({string.Join(",", valuePlaceholders)})");
+                    rowIndex++;
+                }
+
+                cmd.CommandText = $@"
+                    INSERT INTO {_dbName}.{_schemaName}.AudienceUploads_Enriched
+                    ({string.Join(",", enrichedColumns)})
+                    VALUES {string.Join(",", allRows)}";
+
+                cmd.ExecuteNonQuery();
+
+                transaction.Commit();
+            }
 
             return records.Count;
+        }
+
+
+        private async Task<List<double>> GetScoreColumn(IDbConnection conn, string procedureName, string tempAudienceTable)
+        {
+            try
+            {
+                string sql = $"CALL ENRICHMENTS.PUBLIC.{procedureName}(:tempAudienceTable)";
+                var parameters = new DynamicParameters();
+                parameters.Add("tempAudienceTable", tempAudienceTable);
+
+                var result = await conn.QueryAsync<double>(sql, parameters);
+                return result.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public async Task MarkUploadAsEnriched(int uploadId)
