@@ -3,7 +3,7 @@
     public class AudienceUploadRecord
     {
         public string? ID { get; set; }
-        public string? UPLOADFILE_ID { get; set; }
+        //public string? UPLOADFILE_ID { get; set; }
         public string? ADDITIONAL_PERSONAL_EMAILS { get; set; }
         public string? AGE_RANGE { get; set; }
         public string? BITO_IDS { get; set; }
