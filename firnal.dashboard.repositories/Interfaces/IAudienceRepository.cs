@@ -19,6 +19,7 @@ namespace firnal.dashboard.repositories.v2.Interfaces
 
 
         Task<List<AudienceUploadDetails>> GetAudienceUploadDetails();
+        Task<List<AudienceUploadDetails>> GetAudienceUploadDetailsForLoggedInUser(string companyName);
         Task<AudienceUploadDetails> GetAudienceUploadDetailsById(string id);
         Task<List<Audience>> GetAudiences();
         Task<List<AudienceUploadRecord>> GetAudiencesByUploadId(string uploadFileId);

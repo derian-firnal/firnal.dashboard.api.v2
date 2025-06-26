@@ -12,6 +12,7 @@ namespace firnal.dashboard.services.v2.Interfaces
         Task<List<AudienceUploadRecord>> GetAudiencesByUploadId(string uploadFileId);
         Task<List<AudienceUploadRecordEnriched>> GetEnrichedAudiencesByUploadId(string uploadFileId);
         Task<List<AudienceUploadDetails>> GetAudienceUploadDetails();
+        Task<List<AudienceUploadDetails>> GetAudienceUploadDetailsForLoggedInUser(string companyName);
         Task<AudienceUploadDetails> GetAudienceUploadDetailsById(string uploadFileId);
         Task<List<Audience>> GetAudiences();
         Task<decimal> GetAverageIncomeForUpload(int uploadId);

@@ -39,6 +39,28 @@ namespace firnal.dashboard.repositories.v2
             }
         }
 
+        public async Task<List<AudienceUploadDetails>> GetAudienceUploadDetailsForLoggedInUser(string companyName)
+        {
+            try
+            {
+                using var conn = _dbFactory.GetConnection();
+                conn.Open();
+
+                var sql = $@"
+                    SELECT ID, FileName as AudienceName, RowCount as Records, UploadedAt, Status, IsEnriched
+                    FROM {_dbName}.{_schemaName}.AudienceUploadFiles
+                    WHERE USER_SCHEMA = :companyName
+                    ORDER BY UploadedAt DESC";
+
+                var results = await conn.QueryAsync<AudienceUploadDetails>(sql, new { companyName });
+                return results.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+        }
+
         public async Task<AudienceUploadDetails> GetAudienceUploadDetailsById(string uploadFileId)
         {
             using var conn = _dbFactory.GetConnection();

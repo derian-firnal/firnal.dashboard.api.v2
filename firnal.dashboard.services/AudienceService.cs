@@ -43,6 +43,11 @@ namespace firnal.dashboard.services.v2
             return await _audienceRepository.GetAudienceUploadDetails();
         }
 
+        public async Task<List<AudienceUploadDetails>> GetAudienceUploadDetailsForLoggedInUser(string companyName)
+        {
+            return await _audienceRepository.GetAudienceUploadDetailsForLoggedInUser(companyName);
+        }
+
         public async Task<AudienceUploadDetails> GetAudienceUploadDetailsById(string uploadFileId)
         {
             return await _audienceRepository.GetAudienceUploadDetailsById(uploadFileId);

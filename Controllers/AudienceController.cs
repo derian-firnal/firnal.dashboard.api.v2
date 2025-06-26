@@ -30,14 +30,28 @@ namespace firnal.dashboard.api.v2.Controllers
         public async Task<IActionResult> UploadFiles([FromForm] List<IFormFile> files)
         {
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            var schemas = (await _schemaService.GetSchemaForUserId(userEmail)).FirstOrDefault();
-            if (string.IsNullOrEmpty(schemas)) schemas = "ADMIN";
+            if (string.IsNullOrEmpty(userEmail))
+                return Unauthorized("User email not found in token.");
 
+            // Step 1: Determine schema
+            string schema;
+            if (userRole?.ToLower() == "admin")
+                schema = "ADMIN";
+            else
+            {
+                schema = (await _schemaService.GetSchemaForUserId(userEmail)).FirstOrDefault();
+                if (string.IsNullOrEmpty(schema))
+                    return BadRequest("No schema found for this user.");
+            }
+
+            // Step 2: Validate files
             if (files == null || files.Count == 0)
                 return BadRequest("No files uploaded.");
 
-            bool success = await _audienceService.UploadAudienceFiles(files, schemas);
+            // Step 3: Upload
+            bool success = await _audienceService.UploadAudienceFiles(files, schema);
             return Ok(new { success });
         }
 
@@ -45,6 +59,13 @@ namespace firnal.dashboard.api.v2.Controllers
         public async Task<IActionResult> GetAudienceUploadDetails()
         {
             var details = await _audienceService.GetAudienceUploadDetails();
+            return Ok(details);
+        }
+
+        [HttpGet("getAudienceUploadDetailsForLoggedInUser/{schemaName}")]
+        public async Task<IActionResult> GetAudienceUploadDetailsForLoggedInUser(string schemaName)
+        {
+            var details = await _audienceService.GetAudienceUploadDetailsForLoggedInUser(schemaName);
             return Ok(details);
         }
 
