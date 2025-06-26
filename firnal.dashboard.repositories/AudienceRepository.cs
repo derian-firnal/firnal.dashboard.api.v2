@@ -83,6 +83,76 @@ namespace firnal.dashboard.repositories.v2
 
         public async Task<(int rowCount, string errorMessage)> InsertAudienceRecordsAsync(List<AudienceUploadRecord> records, long uploadFileId)
         {
+            var columnNames = new List<string>
+            {
+                "ID",
+                "UPLOADFILE_ID",
+                "ADDITIONAL_PERSONAL_EMAILS",
+                "AGE_RANGE",
+                "BITO_IDS",
+                "BUSINESS_EMAIL",
+                "BUSINESS_EMAIL_LAST_SEEN",
+                "BUSINESS_EMAIL_VALIDATION_STATUS",
+                "CATEGORY",
+                "CC_ID",
+                "CHILDREN",
+                "COMPANY_ADDRESS",
+                "COMPANY_CITY",
+                "COMPANY_DESCRIPTION",
+                "COMPANY_DOMAIN",
+                "COMPANY_EMPLOYEE_COUNT",
+                "COMPANY_LAST_UPDATED",
+                "COMPANY_LINKEDIN_URL",
+                "COMPANY_NAME",
+                "COMPANY_PHONE",
+                "COMPANY_REVENUE",
+                "COMPANY_SIC",
+                "COMPANY_STATE",
+                "COMPANY_ZIP",
+                "DEPARTMENT",
+                "DPV_CODE",
+                "EDUCATION_HISTORY",
+                "FIRST_NAME",
+                "GENDER",
+                "HOMEOWNER",
+                "INCOME_RANGE",
+                "JOB_TITLE",
+                "JOB_TITLE_LAST_UPDATED",
+                "LAST_NAME",
+                "LAST_UPDATED",
+                "LINKEDIN_URL",
+                "MAIDS",
+                "MARRIED",
+                "MOBILE_PHONE",
+                "NET_WORTH",
+                "PERSONAL_ADDRESS",
+                "PERSONAL_CITY",
+                "PERSONAL_COUNTRY",
+                "PERSONAL_EMAILS",
+                "PERSONAL_EMAILS_LAST_SEEN",
+                "PERSONAL_EMAILS_VALIDATION_STATUS",
+                "PERSONAL_STATE",
+                "PERSONAL_ZIP",
+                "PERSONAL_ZIP4",
+                "PRIMARY_INDUSTRY",
+                "PROFESSIONAL_ADDRESS",
+                "PROFESSIONAL_ADDRESS_2",
+                "PROFESSIONAL_CITY",
+                "PROFESSIONAL_STATE",
+                "PROFESSIONAL_ZIP",
+                "PROFESSIONAL_ZIP4",
+                "RELATED_DOMAINS",
+                "SENIORITY_LEVEL",
+                "SOCIAL_CONNECTIONS",
+                "SUB_CATEGORY",
+                "TIMES_SEEN",
+                "TOPIC",
+                "WORK_HISTORY",
+                "SCORE",
+                "SHA256_LC_HEM",
+                "SOURCEFILE"
+            };
+
             int rowCount = 0;
             string errorMessage = null;
 
@@ -101,27 +171,44 @@ namespace firnal.dashboard.repositories.v2
                     cmd.Transaction = transaction;
 
                     var props = typeof(AudienceUploadRecord).GetProperties();
-                    var columns = props.Select(p => p.Name).ToList(); //.Append("UPLOADFILE_ID").ToList();
+                    //var columns = props.Select(p => p.Name).ToList(); //.Append("UPLOADFILE_ID").ToList();
 
                     var allRows = new List<string>();
                     int rowIndex = 0;
+
+                    var propsDict = typeof(AudienceUploadRecord).GetProperties().ToDictionary(p => p.Name, p => p);
+
+                    var orderedProps = columnNames
+                        .Select(col => col == "UPLOADFILE_ID"
+                            ? null // Will add manually
+                            : propsDict.TryGetValue(col, out var prop) ? prop : null)
+                        .ToList();
 
                     foreach (var record in batch)
                     {
                         var valuePlaceholders = new List<string>();
 
-                        foreach (var prop in props)
+                        for (int j = 0; j < orderedProps.Count; j++)
                         {
-                            string paramName = $"{prop.Name}_{rowIndex}";
-                            var val = prop.GetValue(record) ?? DBNull.Value;
-
-                            cmd.Parameters.Add(new SnowflakeDbParameter { ParameterName = paramName, DbType = DbType.String, Value = val });
-                            valuePlaceholders.Add($":{paramName}");
+                            var prop = orderedProps[j];
+                            if (columnNames[j] == "UPLOADFILE_ID")
+                            {
+                                var paramName = $"UPLOADFILE_ID_{rowIndex}";
+                                cmd.Parameters.Add(new SnowflakeDbParameter { ParameterName = paramName, DbType = DbType.Int64, Value = uploadFileId });
+                                valuePlaceholders.Add($":{paramName}");
+                            }
+                            else if (prop != null)
+                            {
+                                var paramName = $"{prop.Name}_{rowIndex}";
+                                var val = prop.GetValue(record) ?? DBNull.Value;
+                                cmd.Parameters.Add(new SnowflakeDbParameter { ParameterName = paramName, DbType = DbType.String, Value = val });
+                                valuePlaceholders.Add($":{paramName}");
+                            }
+                            else
+                            {
+                                valuePlaceholders.Add("NULL"); // Placeholder for missing property
+                            }
                         }
-
-                        string fileParam = $"UPLOADFILE_ID_{rowIndex}";
-                        cmd.Parameters.Add(new SnowflakeDbParameter { ParameterName = fileParam, DbType = DbType.Int64, Value = uploadFileId });
-                        valuePlaceholders.Add($":{fileParam}");
 
                         allRows.Add($"({string.Join(",", valuePlaceholders)})");
                         rowIndex++;
@@ -129,7 +216,7 @@ namespace firnal.dashboard.repositories.v2
 
                     cmd.CommandText = $@"
                         INSERT INTO {_dbName}.{_schemaName}.AudienceUploads 
-                        ({string.Join(",", columns)})
+                        ({string.Join(",", columnNames)})
                         VALUES {string.Join(",", allRows)}";
 
                     cmd.ExecuteNonQuery();

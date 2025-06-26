@@ -68,6 +68,4 @@
         public string? score { get; set; }
         public string? sha256_lc_hem { get; set; }
     }
-
-
 }
